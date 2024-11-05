@@ -35,4 +35,4 @@ jobs:
 
       - name: Build Application
         run: |
-          go build -v ./cmd/auth-server
+          go build -v ./cmd/main.go
