@@ -6,15 +6,18 @@ import (
 	"os"
 )
 
-func NewLogger() (*zap.Logger, error) {
+var Logger *zap.Logger
+
+func init() {
 	var cfg zap.Config
 
-	if os.Getenv("APP_ENV") == "production" {
+	env := os.Getenv("APP_ENV")
+	if env == "production" {
 		cfg = zap.NewProductionConfig()
-		cfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+		cfg.Level.SetLevel(zap.InfoLevel)
 	} else {
 		cfg = zap.NewDevelopmentConfig()
-		cfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+		cfg.Level.SetLevel(zap.DebugLevel)
 		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
@@ -23,11 +26,15 @@ func NewLogger() (*zap.Logger, error) {
 	cfg.EncoderConfig.TimeKey = "timestamp"
 	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	logger, err := cfg.Build()
+	var err error
+	Logger, err = cfg.Build()
 	if err != nil {
-		return nil, err
+		Logger.Error("Failed to initialize logger", zap.Error(err))
 	}
 
-	defer logger.Sync()
-	return logger, nil
+	defer Logger.Sync()
+}
+
+func GetLogger() *zap.Logger {
+	return Logger
 }
