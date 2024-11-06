@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/oidentity/auth-server/internal/config"
+	"github.com/oidentity/auth-server/internal/handler"
 	"github.com/oidentity/auth-server/internal/logger"
 	"go.uber.org/zap"
 )
@@ -29,6 +30,8 @@ func NewServer() *Server {
 	}
 	router.Use(gin.Recovery())
 
+	handler.SetupRoutes(router)
+
 	return &Server{
 		Router: router,
 	}
@@ -36,10 +39,6 @@ func NewServer() *Server {
 
 func (s *Server) Start() {
 	log := logger.GetLogger()
-	// Define routes
-	s.Router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "Hello, World!"})
-	})
 
 	srv := &http.Server{
 		Addr:    ":" + config.LoadConfig().Port,

@@ -1,31 +1,38 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
-	"os"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Port        string
 	LogLevel    string
 	Environment string
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPassword  string
+	DBName      string
 }
 
 func LoadConfig() Config {
-	if err := godotenv.Load(); err != nil {
-		panic("Error loading .env file")
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
 	}
 
 	return Config{
-		Port:        getEnv("PORT", "8080"),
-		LogLevel:    getEnv("LOG_LEVEL", "info"),
-		Environment: getEnv("ENVIRONMENT", "development"),
+		Port:        viper.GetString("PORT"),
+		LogLevel:    viper.GetString("LOG_LEVEL"),
+		Environment: viper.GetString("APP_ENV"),
+		DBHost:      viper.GetString("DB_HOST"),
+		DBPort:      viper.GetString("DB_PORT"),
+		DBUser:      viper.GetString("DB_USER"),
+		DBPassword:  viper.GetString("DB_PASSWORD"),
+		DBName:      viper.GetString("DB_NAME"),
 	}
-}
-
-func getEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultValue
 }
